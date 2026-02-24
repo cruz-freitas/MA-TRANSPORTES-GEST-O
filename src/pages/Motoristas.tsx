@@ -10,6 +10,7 @@ const Motoristas = () => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ nome: "", cnh: "", telefone: "", email: "", password: "" });
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchMotoristas = async () => {
     if (!empresaId) return;
@@ -25,19 +26,67 @@ const Motoristas = () => {
     if (!empresaId) return;
     setSaving(true);
 
-    // Create auth user first, then motorista record
-    // Note: In production, this should be done via edge function with service_role
-    // For now, we just create the motorista record (admin will need to create auth users separately)
-    await supabase.from("motoristas").insert({
-      empresa_id: empresaId,
-      nome: form.nome,
-      cnh: form.cnh,
-      telefone: form.telefone,
-    });
+    try {
+      if (editingId) {
+        const { error } = await supabase
+          .from("motoristas")
+          .update({
+            nome: form.nome,
+            cnh: form.cnh,
+            telefone: form.telefone,
+          })
+          .eq("id", editingId)
+          .eq("empresa_id", empresaId);
 
-    setForm({ nome: "", cnh: "", telefone: "", email: "", password: "" });
-    setShowForm(false);
-    setSaving(false);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("motoristas").insert({
+          empresa_id: empresaId,
+          nome: form.nome,
+          cnh: form.cnh,
+          telefone: form.telefone,
+        });
+
+        if (error) throw error;
+      }
+
+      setForm({ nome: "", cnh: "", telefone: "", email: "", password: "" });
+      setEditingId(null);
+      setShowForm(false);
+      fetchMotoristas();
+    } catch (err: any) {
+      alert(err?.message ?? "Erro ao salvar motorista");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditClick = (m: any) => {
+    setForm({
+      nome: m.nome ?? "",
+      cnh: m.cnh ?? "",
+      telefone: m.telefone ?? "",
+      email: "",
+      password: "",
+    });
+    setEditingId(m.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!empresaId) return;
+    if (!confirm("Tem certeza que deseja excluir este motorista?")) return;
+    await supabase.from("motoristas").delete().eq("id", id).eq("empresa_id", empresaId);
+    fetchMotoristas();
+  };
+
+  const handleToggleAtivo = async (m: any) => {
+    if (!empresaId) return;
+    await supabase
+      .from("motoristas")
+      .update({ ativo: !m.ativo })
+      .eq("id", m.id)
+      .eq("empresa_id", empresaId);
     fetchMotoristas();
   };
 
@@ -96,13 +145,28 @@ const Motoristas = () => {
               />
             </div>
           </div>
-          <button
-            type="submit"
-            disabled={saving}
-            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition text-sm disabled:opacity-50"
-          >
-            {saving ? "Salvando..." : "Salvar"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition text-sm disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : editingId ? "Atualizar" : "Salvar"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingId(null);
+                  setForm({ nome: "", cnh: "", telefone: "", email: "", password: "" });
+                  setShowForm(false);
+                }}
+                className="text-sm text-muted-foreground hover:text-destructive"
+              >
+                Cancelar edição
+              </button>
+            )}
+          </div>
         </form>
       )}
 
@@ -113,9 +177,35 @@ const Motoristas = () => {
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${m.ativo ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                {m.ativo ? "Ativo" : "Inativo"}
-              </span>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleToggleAtivo(m)}
+                  className={`text-xs px-2 py-0.5 rounded-full border ${
+                    m.ativo
+                      ? "bg-success/10 text-success border-success/30"
+                      : "bg-destructive/10 text-destructive border-destructive/30"
+                  }`}
+                >
+                  {m.ativo ? "Ativo" : "Inativo"}
+                </button>
+                <div className="flex gap-2 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => handleEditClick(m)}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(m.id)}
+                    className="text-destructive hover:underline"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
             </div>
             <h3 className="font-semibold">{m.nome}</h3>
             {m.telefone && (

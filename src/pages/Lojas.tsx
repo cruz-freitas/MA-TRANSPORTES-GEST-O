@@ -8,6 +8,7 @@ const Lojas = () => {
   const [lojas, setLojas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", endereco: "", valor_padrao: 0 });
 
   const fetchLojas = async () => {
@@ -22,14 +23,54 @@ const Lojas = () => {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!empresaId) return;
-    await supabase.from("lojas").insert({
-      empresa_id: empresaId,
-      nome: form.nome,
-      endereco: form.endereco,
-      valor_padrao: form.valor_padrao,
-    });
+    if (editingId) {
+      await supabase
+        .from("lojas")
+        .update({
+          nome: form.nome,
+          endereco: form.endereco,
+          valor_padrao: form.valor_padrao,
+        })
+        .eq("id", editingId)
+        .eq("empresa_id", empresaId);
+    } else {
+      await supabase.from("lojas").insert({
+        empresa_id: empresaId,
+        nome: form.nome,
+        endereco: form.endereco,
+        valor_padrao: form.valor_padrao,
+      });
+    }
     setForm({ nome: "", endereco: "", valor_padrao: 0 });
+    setEditingId(null);
     setShowForm(false);
+    fetchLojas();
+  };
+
+  const handleEditClick = (loja: any) => {
+    setForm({
+      nome: loja.nome ?? "",
+      endereco: loja.endereco ?? "",
+      valor_padrao: loja.valor_padrao ?? 0,
+    });
+    setEditingId(loja.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!empresaId) return;
+    if (!confirm("Tem certeza que deseja excluir esta loja?")) return;
+    await supabase.from("lojas").delete().eq("id", id).eq("empresa_id", empresaId);
+    fetchLojas();
+  };
+
+  const handleToggleAtiva = async (loja: any) => {
+    if (!empresaId) return;
+    await supabase
+      .from("lojas")
+      .update({ ativa: !loja.ativa })
+      .eq("id", loja.id)
+      .eq("empresa_id", empresaId);
     fetchLojas();
   };
 
@@ -89,9 +130,27 @@ const Lojas = () => {
               />
             </div>
           </div>
-          <button type="submit" className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition text-sm">
-            Salvar
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition text-sm"
+            >
+              {editingId ? "Atualizar" : "Salvar"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingId(null);
+                  setForm({ nome: "", endereco: "", valor_padrao: 0 });
+                  setShowForm(false);
+                }}
+                className="text-sm text-muted-foreground hover:text-destructive"
+              >
+                Cancelar edição
+              </button>
+            )}
+          </div>
         </form>
       )}
 
@@ -102,9 +161,35 @@ const Lojas = () => {
               <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                 <StoreIcon className="w-5 h-5 text-accent" />
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${loja.ativa ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                {loja.ativa ? "Ativa" : "Inativa"}
-              </span>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleToggleAtiva(loja)}
+                  className={`text-xs px-2 py-0.5 rounded-full border ${
+                    loja.ativa
+                      ? "bg-success/10 text-success border-success/30"
+                      : "bg-destructive/10 text-destructive border-destructive/30"
+                  }`}
+                >
+                  {loja.ativa ? "Ativa" : "Inativa"}
+                </button>
+                <div className="flex gap-2 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => handleEditClick(loja)}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(loja.id)}
+                    className="text-destructive hover:underline"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
             </div>
             <h3 className="font-semibold">{loja.nome}</h3>
             {loja.endereco && (
