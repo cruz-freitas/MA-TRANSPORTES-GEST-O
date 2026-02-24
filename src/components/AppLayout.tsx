@@ -7,6 +7,7 @@ import {
   History,
   Store,
   Users,
+  FileText,
   LogOut,
   Truck,
   Menu,
@@ -20,6 +21,7 @@ const navItems = [
   { path: "/historico", label: "Histórico", icon: History, roles: ["admin", "motorista"] },
   { path: "/lojas", label: "Lojas", icon: Store, roles: ["admin"] },
   { path: "/motoristas", label: "Motoristas", icon: Users, roles: ["admin"] },
+  { path: "/relatorios", label: "Relatórios", icon: FileText, roles: ["admin"] },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {

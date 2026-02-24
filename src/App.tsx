@@ -11,6 +11,7 @@ import NovaOperacao from "./pages/NovaOperacao";
 import Historico from "./pages/Historico";
 import Lojas from "./pages/Lojas";
 import Motoristas from "./pages/Motoristas";
+import Relatorios from "./pages/Relatorios";
 import ValidarRegistro from "./pages/ValidarRegistro";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +55,7 @@ function AppRoutes() {
       <Route path="/historico" element={<PrivateRoute><Historico /></PrivateRoute>} />
       <Route path="/lojas" element={<PrivateRoute allowedRoles={["admin"]}><Lojas /></PrivateRoute>} />
       <Route path="/motoristas" element={<PrivateRoute allowedRoles={["admin"]}><Motoristas /></PrivateRoute>} />
+      <Route path="/relatorios" element={<PrivateRoute allowedRoles={["admin"]}><Relatorios /></PrivateRoute>} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
