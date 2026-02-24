@@ -189,22 +189,29 @@ const Motoristas = () => {
                 >
                   {m.ativo ? "Ativo" : "Inativo"}
                 </button>
-                <div className="flex gap-2 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={() => handleEditClick(m)}
-                    className="text-blue-500 hover:underline"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(m.id)}
-                    className="text-destructive hover:underline"
-                  >
-                    Excluir
-                  </button>
-                </div>
+                <div className="flex gap-2">
+  <button
+    type="button"
+    onClick={() => handleEditClick(m)}
+    className="px-3 py-1 text-xs font-medium rounded-lg 
+               bg-blue-500/10 text-blue-600 
+               hover:bg-blue-500/20 
+               transition"
+  >
+    Editar
+  </button>
+
+  <button
+    type="button"
+    onClick={() => handleDelete(m.id)}
+    className="px-3 py-1 text-xs font-medium rounded-lg 
+               bg-red-500/10 text-red-600 
+               hover:bg-red-500/20 
+               transition"
+  >
+    Excluir
+  </button>
+</div>
               </div>
             </div>
             <h3 className="font-semibold">{m.nome}</h3>
