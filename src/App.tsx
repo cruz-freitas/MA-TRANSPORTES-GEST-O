@@ -12,6 +12,7 @@ import Historico from "./pages/Historico";
 import Lojas from "./pages/Lojas";
 import Motoristas from "./pages/Motoristas";
 import Relatorios from "./pages/Relatorios";
+import Veiculos from "./pages/Veiculos";
 import ValidarRegistro from "./pages/ValidarRegistro";
 import NotFound from "./pages/NotFound";
 
@@ -56,6 +57,7 @@ function AppRoutes() {
       <Route path="/lojas" element={<PrivateRoute allowedRoles={["admin"]}><Lojas /></PrivateRoute>} />
       <Route path="/motoristas" element={<PrivateRoute allowedRoles={["admin"]}><Motoristas /></PrivateRoute>} />
       <Route path="/relatorios" element={<PrivateRoute allowedRoles={["admin"]}><Relatorios /></PrivateRoute>} />
+      <Route path="/veiculos" element={<PrivateRoute allowedRoles={["admin"]}><Veiculos /></PrivateRoute>} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -13,6 +13,7 @@ const NovaOperacao = () => {
   const [loading, setLoading] = useState(false);
   const [lojas, setLojas] = useState<any[]>([]);
   const [motoristas, setMotoristas] = useState<any[]>([]);
+  const [veiculos, setVeiculos] = useState<any[]>([]);
   const [searchLoja, setSearchLoja] = useState("");
 
   // Form state
@@ -20,6 +21,7 @@ const NovaOperacao = () => {
     loja_id: "",
     loja_nome: "",
     motorista_id: motoristaId || "",
+    veiculo_id: "",
     tipo_operacao: "coleta" as "coleta" | "entrega",
     tipo_volume: "",
     quantidade: 1,
@@ -45,6 +47,14 @@ const NovaOperacao = () => {
       supabase.from("motoristas").select("*").eq("empresa_id", empresaId).eq("ativo", true)
         .then(({ data }) => setMotoristas(data || []));
     }
+
+    supabase
+      .from("veiculos")
+      .select("*")
+      .eq("empresa_id", empresaId)
+      .eq("ativo", true)
+      .order("placa")
+      .then(({ data }) => setVeiculos(data || []));
   }, [empresaId, role]);
 
   useEffect(() => {
@@ -110,7 +120,7 @@ const NovaOperacao = () => {
   };
 
   const handleSubmit = async () => {
-    if (!empresaId || !form.motorista_id || !form.loja_id) return;
+    if (!empresaId || !form.motorista_id || !form.loja_id || !form.veiculo_id) return;
     setLoading(true);
 
     try {
@@ -143,10 +153,15 @@ const NovaOperacao = () => {
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
+      const veiculoSelecionado = veiculos.find((v) => v.id === form.veiculo_id);
+      const placa = (veiculoSelecionado?.placa ?? "").toString().trim().toUpperCase();
+
       const { error } = await supabase.from("registros_transporte").insert({
         empresa_id: empresaId,
         motorista_id: form.motorista_id,
         loja_id: form.loja_id,
+        veiculo_id: form.veiculo_id,
+        placa: placa || null,
         tipo_operacao: form.tipo_operacao,
         tipo_volume: form.tipo_volume,
         quantidade: form.quantidade,
@@ -177,7 +192,7 @@ const NovaOperacao = () => {
 
   const canNext = () => {
     if (step === 0) return !!form.loja_id;
-    if (step === 1) return form.quantidade > 0 && form.valor_unitario >= 0 && (role === "admin" ? !!form.motorista_id : true);
+    if (step === 1) return form.quantidade > 0 && form.valor_unitario >= 0 && !!form.veiculo_id && (role === "admin" ? !!form.motorista_id : true);
     if (step === 2) return !!coords;
     return true;
   };
@@ -261,6 +276,22 @@ const NovaOperacao = () => {
                 </select>
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-medium text-foreground/80 mb-1.5">Veículo (placa)</label>
+              <select
+                value={form.veiculo_id}
+                onChange={(e) => setForm((f) => ({ ...f, veiculo_id: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="">Selecione...</option>
+                {veiculos.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.placa} {v.descricao ? `- ${v.descricao}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -421,6 +452,12 @@ const NovaOperacao = () => {
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Loja</span>
                 <span className="font-medium">{form.loja_nome}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Veículo</span>
+                <span className="font-medium font-mono">
+                  {veiculos.find((v) => v.id === form.veiculo_id)?.placa ?? "-"}
+                </span>
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Tipo</span>

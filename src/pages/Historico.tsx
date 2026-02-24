@@ -73,6 +73,7 @@ const Historico = () => {
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Data</th>
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Loja</th>
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Motorista</th>
+                <th className="text-left px-5 py-3 text-muted-foreground font-medium">Veículo</th>
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Tipo</th>
                 <th className="text-right px-5 py-3 text-muted-foreground font-medium">Valor</th>
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Status</th>
@@ -81,7 +82,7 @@ const Historico = () => {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-5 py-12 text-center text-muted-foreground">
                     Nenhum registro encontrado
                   </td>
                 </tr>
@@ -94,6 +95,7 @@ const Historico = () => {
                     </td>
                     <td className="px-5 py-3">{(reg.lojas as any)?.nome}</td>
                     <td className="px-5 py-3">{(reg.motoristas as any)?.nome}</td>
+                    <td className="px-5 py-3 font-mono text-xs">{reg.placa || "-"}</td>
                     <td className="px-5 py-3">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                         reg.tipo_operacao === "coleta" ? "bg-info/10 text-info" : "bg-accent/10 text-accent"

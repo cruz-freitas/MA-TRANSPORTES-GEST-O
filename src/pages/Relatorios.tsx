@@ -9,6 +9,7 @@ interface Registro {
   numero_sequencial: number | null;
   created_at: string;
   tipo_operacao: string;
+  placa?: string | null;
   valor_final: number | null;
   lojas: { nome?: string | null; endereco?: string | null } | null;
   motoristas: { nome?: string | null } | null;
@@ -86,6 +87,9 @@ const Relatorios = () => {
       pdf.text(`Motorista: ${r.motoristas?.nome ?? "-"}`, 14, y);
       y += 5;
 
+      pdf.text(`Veículo: ${r.placa ?? "-"}`, 14, y);
+      y += 5;
+
       pdf.text(`Tipo: ${r.tipo_operacao}`, 14, y);
       pdf.text(`Valor: R$ ${(r.valor_final ?? 0).toFixed(2)}`, 70, y);
       y += 6;
@@ -103,6 +107,7 @@ const Relatorios = () => {
       "numero",
       "data",
       "tipo",
+      "placa",
       "loja_nome",
       "loja_endereco",
       "motorista",
@@ -113,6 +118,7 @@ const Relatorios = () => {
       r.numero_sequencial ?? "",
       new Date(r.created_at).toISOString(),
       r.tipo_operacao,
+      r.placa ?? "",
       r.lojas?.nome ?? "",
       r.lojas?.endereco ?? "",
       r.motoristas?.nome ?? "",
@@ -220,6 +226,7 @@ const Relatorios = () => {
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Data</th>
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Loja</th>
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Motorista</th>
+                <th className="text-left px-5 py-3 text-muted-foreground font-medium">Veículo</th>
                 <th className="text-left px-5 py-3 text-muted-foreground font-medium">Tipo</th>
                 <th className="text-right px-5 py-3 text-muted-foreground font-medium">Valor</th>
               </tr>
@@ -227,13 +234,13 @@ const Relatorios = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">
                     Carregando...
                   </td>
                 </tr>
               ) : registros.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">
                     Nenhum registro encontrado para os filtros selecionados.
                   </td>
                 </tr>
@@ -248,6 +255,7 @@ const Relatorios = () => {
                     </td>
                     <td className="px-5 py-3">{reg.lojas?.nome}</td>
                     <td className="px-5 py-3">{reg.motoristas?.nome}</td>
+                    <td className="px-5 py-3 font-mono text-xs">{reg.placa || "-"}</td>
                     <td className="px-5 py-3 capitalize">{reg.tipo_operacao}</td>
                     <td className="px-5 py-3 text-right font-mono">
                       R$ {(reg.valor_final ?? 0).toFixed(2)}

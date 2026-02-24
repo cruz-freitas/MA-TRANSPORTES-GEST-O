@@ -8,6 +8,7 @@ import {
   Store,
   Users,
   FileText,
+  Car,
   LogOut,
   Truck,
   Menu,
@@ -21,6 +22,7 @@ const navItems = [
   { path: "/historico", label: "Histórico", icon: History, roles: ["admin", "motorista"] },
   { path: "/lojas", label: "Lojas", icon: Store, roles: ["admin"] },
   { path: "/motoristas", label: "Motoristas", icon: Users, roles: ["admin"] },
+  { path: "/veiculos", label: "Frota", icon: Car, roles: ["admin"] },
   { path: "/relatorios", label: "Relatórios", icon: FileText, roles: ["admin"] },
 ];
 
